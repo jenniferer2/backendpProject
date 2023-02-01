@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const musicGenres = [
+const genres = [
     {id: 1, name:'R&B', month: 'September', year: '2017', songs: [{id: 1, name: 'Die For You', artist:"The Weeknd"}]},
     {id: 2, name:"Rap", month: 'October', year: '2008', songs: [{id: 1, name: 'Heartless', artist: 'Kanye West'}]},
     {id: 3, name: 'Pop', month: 'May', year: '2020', songs: [{id: 1, name: 'Shinunoga E-Wa', artist: 'Fujii Kaze'}]}

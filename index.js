@@ -2,13 +2,15 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const genres = [
+//Initialization 
+const musicGenres = [
     {id: 1, name:'R&B', month: 'September', year: '2017', songs: [{id: 1, name: 'Die For You', artist:"The Weeknd"}]},
     {id: 2, name:"Rap", month: 'October', year: '2008', songs: [{id: 1, name: 'Heartless', artist: 'Kanye West'}]},
     {id: 3, name: 'Pop', month: 'May', year: '2020', songs: [{id: 1, name: 'Shinunoga E-Wa', artist: 'Fujii Kaze'}]}
 ];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+//Home Page
 app.get('/', (req,res) => {
  res.send("This is Music app!");
 });
@@ -22,204 +24,201 @@ app.delete('/', (req,res) => {
     res.send('DELETE REQUEST');
  });
 
+ //GET REQUEST
  app.get('/api/genres', (req, res) => {
-    res.send(genres.map((genre) => ({ id:genre.id, name:genre.name})));
+    res.send(musicGenres.map((g) => ({ id:g.id, name:g.name})));
 });
 
-//Get Information about a Genre (need genreid)
+//Genre information
 app.get('/api/genres/:genreid', (req, res) => {
-    const genre = genres.find(g => g.id === parseInt(req.params.genreid));
+    const genre = musicGenres.find(g => g.id === parseInt(req.params.genreid));
     if(!genre){
-        res.status(404).send('The genre with the given ID was not found');
+        res.status(404).send('A genre with this ID was not found');
         return
     }
         res.send(genre);
 });
 
-//Get Information about a Song (need genre and song id)
+//Song Information
 app.get('/api/genres/:genreid/:songid', (req, res) => {
-    const genre = genres.find(g => g.id === parseInt(req.params.genreid));
+    const genre = musicGenres.find(g => g.id === parseInt(req.params.genreid));
     if(!genre){
-        res.status(404).send('The genre with the given ID was not found');
+        res.status(404).send('A genre with this ID was not found');
         return
     }
     else{
-        const song = genre.songs.find(s => s.id === parseInt(req.params.songid));
+        const song = musicGenres.songs.find(s => s.id === parseInt(req.params.songid));
         if(!song){
-            res.status(404).send('The song with the given ID was not found');
+            res.status(404).send('A song with this ID was not found');
             return
         }
         res.send(song);
     }
 });
 
-//Filter by Year (need year)
+//Filtering years
 app.get('/api/filter/:year', (req, res) => {
-    const year = genres.filter(y => parseInt(y.year) === parseInt(req.params.year));
-    const show = [
+    const year = musicGenres.filter(y => parseInt(y.year) === parseInt(req.params.year));
+    const display = [
         {name: "filter", year: parseInt(req.params.year)},
-        year.map((genre) => ({ id:genre.id, name:genre.name, month: genre.month, year: genre.year}))
+        year.map((g) => ({ id:g.id, name:g.name, month: g.month, year: g.year}))
     ];
-    res.send(show);
+    res.send(display);
 });
 
-//Filter by Month (need month)
+//Filter Months
 app.get('/api/filter/month/:month', (req, res) => {
-    const month = genres.filter(y => String(y.month).toLowerCase() === String(req.params.month).toLowerCase());
-    const show = [
+    const month = musicGenres.filter(y => String(y.month).toLowerCase() === String(req.params.month).toLowerCase());
+    const display = [
         {name: "filter", month: req.params.month},
-        month.map((genre) => ({ id:genre.id, name:genre.name, month: genre.month, year: genre.year}))
+        month.map((g) => ({ id:g.id, name:g.name, month: g.month, year: g.year}))
     ];
-    res.send(show);
+    res.send(display);
 });
 
-//Filter by Year and Month (need year and month)
+//Filter year and month
 app.get('/api/filter/:year/:month', (req, res) => {
-    const year = genres.filter(y => parseInt(y.year) === parseInt(req.params.year));
+    const year = musicGenres.filter(y => parseInt(y.year) === parseInt(req.params.year));
     const month = year.filter(y => String(y.month).toLowerCase() === String(req.params.month).toLowerCase());
-    const show = [
+    const display = [
         {name: "filter", year: parseInt(req.params.year), month: req.params.month},
-        month.map((genre) => ({ id:genre.id, name:genre.name, month: genre.month, year: genre.year}))
+        month.map((g) => ({ id:g.id, name:g.name, month: g.month, year: g.year}))
     ];
-    res.send(show);
+    res.send(display);
 });
 
-
-//HTTP POST Requests
-//Add new genre (need json data: name)
+//POST REQUEST
 app.post('/api/genres', (req, res) => {
     if(req.body.name.length > 3 && req.body.name.length < 16){
         const date = new Date();
-        const genre = {
-            id: genres.length + 1,
+        const g = {
+            id: musicGenres.length + 1,
             name: req.body.name,
             month: months[date.getMonth()],
             year: date.getFullYear(),
             songs: []
         }
-        //check if songs exist, check if songs are formatted right
-        genres.push(genre);
-        res.send(genre);
+        
+        musicGenres.push(g);
+        res.send(g);
         return
     }
-    res.status(404).send("Name is required and it should be a minimum of 3 characters and a maximum of 15 characters");
+    res.status(404).send("Name is missing and in improper format.");
 });
 
-//Add new song (need genreid, json data: name + optional artist)
+//Adding a song
 app.post('/api/genres/:genreid', (req, res) => {
     if(req.body.name.length > 3 && req.body.name.length < 16){
-        const genre = genres.find(g => g.id === parseInt(req.params.genreid));
+        const genre = musicGenres.find(g => g.id === parseInt(req.params.genreid));
         if(!genre){
-            res.status(404).send('The genre with the given ID was not found');
+            res.status(404).send('A genre with the given ID was not found');
             return
         }
-        const genrePos = genres.findIndex(g => g.id === parseInt(req.params.genreid));
-        var singer = "Asynchronous";
+        const genreP = musicGenres.findIndex(g => g.id === parseInt(req.params.genreid));
+        var singer = "N/A";
         if(req.body.artist != null){
             singer = req.body.artist;
         }
-        const song = {
-            id: genres[genrePos].songs.length + 1,
+        const s = {
+            id: musicGenres[genreP].songs.length + 1,
             name: req.body.name,
             artist: singer
         }
-        genres[genrePos].songs.push(song);
-        res.send(song);
+        musicGenres[genreP].songs.push(s);
+        res.send(s);
         return
     }
-    res.status(404).send("Name is required and it should be a minimum of 3 characters");
+    res.status(404).send("Name is missing and in improper format.");
 });
 
 
-//HTTP PUT Requests
-//Changes genre name (need genreid, json data: name)
+//PUT REQUEST
 app.put('/api/genres/:id', (req,res)=>{
-    const genre = genres.find(g => g.id === parseInt(req.params.id));
+    const genre = musicGenres.find(g => g.id === parseInt(req.params.id));
     if(!genre){
-        res.status(404).send('The genre with the given ID was not found');
+        res.status(404).send('A genre with this ID was not found');
         return
     }
     if(req.body.name.length > 3 && req.body.name.length < 16){
-        const genrePos = genres.findIndex(g => g.id === parseInt(req.params.id));
+        const genreP = musicGenres.findIndex(g => g.id === parseInt(req.params.id));
         const date = new Date();
-        const change = {
+        const news = {
             id: parseInt(req.params.id),
             name: req.body.name,
             month: months[date.getMonth()],
             year: date.getFullYear(),
-            songs: genres[genrePos].songs
+            songs: musicGenres[genreP].songs
         };
-        genres[genrePos] = change;
-        res.send(change);
+        musicGenres[genreP] = news;
+        res.send(news);
         return
     };
-    res.status(404).send("Name is required and it should be a minimum of 3 characters");
+    res.status(404).send("Name is missing and in improper format.");
 });
 
-//Change song name and artist (need genreid, songid, and json data: name + optional artist)
+//Change song title + artist
 app.put('/api/genres/:genreid/:songid', (req,res)=>{
-    const genre = genres.find(g => g.id === parseInt(req.params.genreid));
+    const genre = musicGenres.find(g => g.id === parseInt(req.params.genreid));
     if(!genre){
-        res.status(404).send('The genre with the given ID was not found');
+        res.status(404).send('A genre with this ID was not found');
         return
     }
     const song = genre.songs.find(s => s.id === parseInt(req.params.songid));
     if(!song){
-            res.status(404).send('The song with the given ID was not found');
+            res.status(404).send('The song with this ID was not found');
             return
     }
     if(req.body.name.length > 3 && req.body.name.length < 16){
-        const genrePos = genres.findIndex(g => g.id === parseInt(req.params.genreid));
-        var singer = "Asynchronous";
+        const genreP = genres.findIndex(g => g.id === parseInt(req.params.genreid));
+        var singer = "NA";
         if(req.body.artist != null){
             singer = req.body.artist;
         }
-        const change = {
+        const news = {
             id: parseInt(req.params.songid),
             name: req.body.name,
             artist: singer
         };
-        const songPos = genres[genrePos].songs.findIndex(s => s.id === parseInt(req.params.songid));
-        genres[genrePos].songs[songPos] = change;
-        res.send(change);
+        const songP = musicGenres[genreP].songs.findIndex(s => s.id === parseInt(req.params.songid));
+        musicGenres[genreP].songs[songP] = news;
+        res.send(news);
         return
     };
-    res.status(404).send("Name is required and it should be a minimum of 3 characters");
+    res.status(404).send(" Name is missing and in improper format.");
 });
 
 
-//HTTP DELETE REQUEST
-//Delete genre based on genreid (need genreid)
+//Delete genre
 app.delete('/api/genres/:id', (req,res)=>{
-    const genre = genres.find(g => g.id === parseInt(req.params.id));
+    const genre = musicGenres.find(g => g.id === parseInt(req.params.id));
     if(!genre){
-        res.status(404).send('The genre with the given ID was not found');
+        res.status(404).send('A genre with the given ID was not found');
         return
     }
-    const genrePos = genres.findIndex(g => g.id === parseInt(req.params.id));
-    const toDelete = genres[genrePos];
-    genres.splice(genrePos, 1);
-    res.send(toDelete);
+    const genreP = musicGenres.findIndex(g => g.id === parseInt(req.params.id));
+    const ddelete = musicGenres[genreP];
+    genres.splice(genreP, 1);
+    res.send(ddelete);
 });
 
-//Delete song (need genreid and songid)
+//Deleting song
 app.delete('/api/genres/:genreid/:songid', (req, res) => {
-    const genre = genres.find(g => g.id === parseInt(req.params.genreid));
+    const genre = musicGenres.find(g => g.id === parseInt(req.params.genreid));
     if(!genre){
-        res.status(404).send('The genre with the given ID was not found');
+        res.status(404).send('A genre with this ID was not found');
         return
     }
     else{
         const song = genre.songs.find(s => s.id === parseInt(req.params.songid));
         if(!song){
-            res.status(404).send('The song with the given ID was not found');
+            res.status(404).send('The song with this ID was not found');
             return
         }
-        const genrePos = genres.findIndex(g => g.id === parseInt(req.params.genreid));
-        const songPos = genres[genrePos].songs.findIndex(g => g.id === parseInt(req.params.songid));
-        const toDelete = genres[genrePos].songs[songPos];
-        genres[genrePos].songs.splice(songPos, 1);
-        res.send(toDelete);
+        const genreP = musicGenres.findIndex(g => g.id === parseInt(req.params.genreid));
+        const songP = musicGenres[genreP].songs.findIndex(g => g.id === parseInt(req.params.songid));
+        const ddelete = musicGenres[genreP].songs[songP];
+        musicGenres[genreP].songs.splice(songP, 1);
+        res.send(ddelete);
     }
 });
 
